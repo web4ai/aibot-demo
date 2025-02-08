@@ -6,7 +6,7 @@ app = FastAPI()
 
 @app.get("/")
 def home():
-    file_path = "aibot/ws.html"  # 请将此路径替换为实际的文件路径
+    file_path = "ws.html"  # 请将此路径替换为实际的文件路径
     return FileResponse(file_path)
 
 

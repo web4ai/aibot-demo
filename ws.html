@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat With AI Bot</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f2f5;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .chat-container {
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            width: 90%;
+            max-width: 400px;
+            height: 80%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chat-header {
+            background-color: #0078d4;
+            color: white;
+            padding: 15px;
+            text-align: center;
+            font-size: 1.2em;
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 15px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chat-input {
+            display: flex;
+            padding: 10px;
+            border-top: 1px solid #ddd;
+        }
+
+        .chat-input input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-right: 10px;
+        }
+
+        .chat-input button {
+            padding: 10px 15px;
+            border: none;
+            background-color: #0078d4;
+            color: white;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .chat-input button:hover {
+            background-color: #005bb5;
+        }
+
+        .message {
+            margin-bottom: 10px;
+            padding: 10px;
+            border-radius: 10px;
+            max-width: 70%;
+            display: inline-block;
+            word-wrap: break-word;
+        }
+
+        .message.user {
+            background-color: #dcf8c6;
+            align-self: flex-end;
+        }
+
+        .message.bot {
+            background-color: #f1f1f1;
+            align-self: flex-start;
+            border: 1px solid #ccc;
+        }
+
+        .timestamp {
+            font-size: 0.8em;
+            color: #888;
+            display: block;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <div class="chat-header">
+            Chat With AI Bot
+        </div>
+        <div class="chat-messages" id="messages"></div>
+        <div class="chat-input">
+            <input type="text" id="messageInput" placeholder="Type a message...">
+            <button id="sendButton">Send</button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const messages = document.getElementById("messages");
+            const messageInput = document.getElementById("messageInput");
+            const sendButton = document.getElementById("sendButton");
+            let ws;
+
+            function addMessage(message, type) {
+                const messageElement = document.createElement("div");
+                const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+                messageElement.classList.add("message", type);
+                messageElement.innerHTML = `${message}<span class="timestamp">${timestamp}</span>`;
+                messages.appendChild(messageElement);
+                messages.scrollTop = messages.scrollHeight;
+            }
+
+            function connectWebSocket() {
+                ws = new WebSocket("ws://" + window.location.host + "/ws");
+
+                ws.onopen = function () {
+                    addMessage("I am your dedicated AI Bot. Send me a message if you need anything.", "bot");
+                };
+
+                ws.onmessage = function (event) {
+                    addMessage(event.data, "bot");
+                };
+
+                ws.onclose = function () {
+                    addMessage("Disconnected from the server", "bot");
+                };
+
+                ws.onerror = function (error) {
+                    addMessage("Error: " + error.message, "bot");
+                };
+            }
+
+            sendButton.addEventListener("click", function () {
+                if (ws && ws.readyState === WebSocket.OPEN) {
+                    const message = messageInput.value;
+                    if (message) {
+                        ws.send(message);
+                        addMessage(message, "user");
+                        messageInput.value = "";
+                    }
+                }
+            });
+
+            messageInput.addEventListener("keypress", function (event) {
+                if (event.key === "Enter") {
+                    sendButton.click();
+                }
+            });
+
+            connectWebSocket();
+        });
+    </script>
+</body>
+</html>
