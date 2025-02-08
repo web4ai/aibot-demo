@@ -1,0 +1,10 @@
+openai
+pgvector
+psycopg2
+flask
+python-dotenv
+requests
+sqlalchemy
+websockets
+fastapi
+uvicorn
